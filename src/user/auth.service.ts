@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
-import { RegisterUserPayload } from "./auth.interface";
+import { LoginUserPayload, RegisterUserPayload } from "./auth.interface";
 import config from "../config";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
@@ -33,6 +33,24 @@ const registerUserDB = async (payload: RegisterUserPayload) => {
   return user;
 };
 
+const loginUserDB = async (payload: LoginUserPayload) => {
+  const { email, password } = payload;
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: email,
+    },
+  });
+
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatched) {
+    throw new Error("Invalid email or password");
+  }
+
+  return user;
+};
+
 export const userService = {
   registerUserDB,
+  loginUserDB,
 };
