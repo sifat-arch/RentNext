@@ -12,3 +12,5 @@ model Property {
   reviews     Review[]
   createdAt   DateTime @default(now())
 }
+
+

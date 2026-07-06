@@ -1,10 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import httpStatus from "http-status";
-import { catchAsync } from "../utils/catchAsync";
+import { catchAsync } from "../../utils/catchAsync";
 import { userService } from "./auth.service";
-import { sendResponse } from "../utils/sendResponce";
-import config from "../config";
-import { jwtUtils } from "../utils/jwt";
+import { sendResponse } from "../../utils/sendResponce";
 
 const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

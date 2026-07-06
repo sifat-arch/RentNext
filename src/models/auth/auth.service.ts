@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
-import { prisma } from "../lib/prisma";
+import config from "../../config";
+import { prisma } from "../../lib/prisma";
 import { LoginUserPayload, RegisterUserPayload } from "./auth.interface";
-import config from "../config";
-import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
-import { jwtUtils } from "../utils/jwt";
+import { jwtUtils } from "../../utils/jwt";
+import { JwtPayload, SignOptions } from "jsonwebtoken";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
   const isUserExist = await prisma.user.findUnique({
