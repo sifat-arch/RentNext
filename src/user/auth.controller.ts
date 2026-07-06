@@ -77,8 +77,33 @@ const getMe = catchAsync(
   },
 );
 
+const refreshToken = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    const { accessToken } = await userService.refreshTokenDB(refreshToken);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 2, // 2 days
+    });
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Token Refreshed successfully",
+      data: {
+        accessToken,
+      },
+    });
+  },
+);
+
 export const userController = {
   registerUser,
   loginUser,
   getMe,
+  refreshToken,
 };

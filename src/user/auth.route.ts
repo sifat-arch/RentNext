@@ -13,4 +13,6 @@ router.get(
   userController.getMe,
 );
 
+router.post("/refresh-token", userController.refreshToken);
+
 export const userRouter = router;

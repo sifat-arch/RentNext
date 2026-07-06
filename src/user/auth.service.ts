@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { LoginUserPayload, RegisterUserPayload } from "./auth.interface";
 import config from "../config";
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { jwtUtils } from "../utils/jwt";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
@@ -94,8 +94,49 @@ const getMeDB = async (userId: string) => {
   return user;
 };
 
+const refreshTokenDB = async (refreshToken: string) => {
+  const verifiedRefreshtoken = jwtUtils.verifyToken(
+    refreshToken,
+    config.jwt_refresh_secret,
+  );
+
+  if (!verifiedRefreshtoken.success) {
+    throw new Error(verifiedRefreshtoken.error);
+  }
+
+  const { id } = verifiedRefreshtoken.data as JwtPayload;
+
+  const user = await prisma.user.findFirstOrThrow({
+    where: {
+      id,
+    },
+  });
+
+  if (user.status === "BANNED") {
+    throw new Error("User is Blocked");
+  }
+
+  const jwtpayload = {
+    id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtpayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions["expiresIn"],
+  );
+
+  return {
+    accessToken,
+  };
+};
+
 export const userService = {
   registerUserDB,
   loginUserDB,
   getMeDB,
+  refreshTokenDB,
 };
