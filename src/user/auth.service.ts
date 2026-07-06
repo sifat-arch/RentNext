@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { LoginUserPayload, RegisterUserPayload } from "./auth.interface";
 import config from "../config";
+import jwt, { SignOptions } from "jsonwebtoken";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
   const isUserExist = await prisma.user.findUnique({
@@ -47,7 +48,38 @@ const loginUserDB = async (payload: LoginUserPayload) => {
     throw new Error("Invalid email or password");
   }
 
-  return user;
+  // accesstoen generate
+
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    config.jwt_access_secret,
+    {
+      expiresIn: config.jwt_access_expires_in,
+    } as SignOptions,
+  );
+  // refresh token generate
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    config.jwt_refresh_secret,
+    {
+      expiresIn: config.jwt_refresh_expires_in,
+    } as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
 export const userService = {
