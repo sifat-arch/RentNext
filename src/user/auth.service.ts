@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { LoginUserPayload, RegisterUserPayload } from "./auth.interface";
 import config from "../config";
 import jwt, { SignOptions } from "jsonwebtoken";
+import { jwtUtils } from "../utils/jwt";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
   const isUserExist = await prisma.user.findUnique({
@@ -43,14 +44,16 @@ const loginUserDB = async (payload: LoginUserPayload) => {
     },
   });
 
+  if (user.status === "BANNED") {
+    throw new Error("Your account has been banned. Please contact support.");
+  }
+
   const isPasswordMatched = await bcrypt.compare(password, user.password);
   if (!isPasswordMatched) {
     throw new Error("Invalid email or password");
   }
 
-  // accesstoen generate
-
-  const accessToken = jwt.sign(
+  const accessToken = jwtUtils.createToken(
     {
       id: user.id,
       email: user.email,
@@ -58,12 +61,10 @@ const loginUserDB = async (payload: LoginUserPayload) => {
       role: user.role,
     },
     config.jwt_access_secret,
-    {
-      expiresIn: config.jwt_access_expires_in,
-    } as SignOptions,
+    config.jwt_access_expires_in as SignOptions["expiresIn"],
   );
-  // refresh token generate
-  const refreshToken = jwt.sign(
+
+  const refreshToken = jwtUtils.createToken(
     {
       id: user.id,
       email: user.email,
@@ -71,9 +72,7 @@ const loginUserDB = async (payload: LoginUserPayload) => {
       role: user.role,
     },
     config.jwt_refresh_secret,
-    {
-      expiresIn: config.jwt_refresh_expires_in,
-    } as SignOptions,
+    config.jwt_refresh_expires_in as SignOptions["expiresIn"],
   );
 
   return {
@@ -82,7 +81,21 @@ const loginUserDB = async (payload: LoginUserPayload) => {
   };
 };
 
+const getMeDB = async (userId: string) => {
+  const user = prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+    omit: {
+      password: true,
+    },
+  });
+
+  return user;
+};
+
 export const userService = {
   registerUserDB,
   loginUserDB,
+  getMeDB,
 };
