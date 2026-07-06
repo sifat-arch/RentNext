@@ -1,0 +1,11 @@
+model Booking {
+   id String @id @default(ulid())
+   userId String 
+   user User @relation(fields: [userId] , references: [id])
+   propertyId String
+   property   Property      @relation(fields: [propertyId], references: [id])
+   status BookingStatus @default(PENDING)
+   createdAt  DateTime      @default(now())
+   payment  Payment?
+   
+}
