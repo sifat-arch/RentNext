@@ -1,11 +1,22 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { bookingService } from "./booking.service";
+import { sendResponse } from "../../utils/sendResponce";
+import httpStatus from "http-status";
 
-const createBooking = catchAsync(async (req: Request, res: Response) => {
-  const landLordId = req.user?.id;
+const createBooking = catchAsync(async (req, res) => {
+  const payload = req.body;
+  const result = await bookingService.createBookingIntoDB(
+    req.user!.id,
+    payload,
+  );
 
-  const result = await bookingService.createBookingIntoDB(landLordId as string);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: "Booking created successfully",
+    data: result,
+  });
 });
 
 export const bookingController = {

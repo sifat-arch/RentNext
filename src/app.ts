@@ -7,6 +7,7 @@ import { bookingController } from "./models/bookings/booking.controller";
 import { propertyController } from "./models/property/propery.controller";
 import { propertyRouter } from "./models/property/property.route";
 import { categoryRoutes } from "./models/category/category.route";
+import { bookingRoute } from "./models/bookings/booking.route";
 
 const app: Application = express();
 app.use(
@@ -23,6 +24,7 @@ app.use("/api/auth", userRouter);
 // app.use("/api/booking");
 app.use("/api/property", propertyRouter);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/bookings", bookingRoute);
 app.get("/", (req: Request, res: Response) => {
   res.send("hello world");
 });

@@ -1,5 +1,6 @@
 import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { IBookingUpdate } from "../bookings/booking.interface";
 import { IProperty, IPropertyUpdate } from "./proprty.interface";
 
 const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
@@ -139,9 +140,60 @@ const deletePropertyFromDB = async (propertyId: string, landLordId: string) => {
   });
 };
 
+const getAllBookingsFromDB = async () => {
+  return await prisma.booking.findMany({
+    include: {
+      property: true,
+      user: true,
+      payment: true,
+    },
+  });
+};
+
+const getSingleBookingFromDB = async (id: string) => {
+  return await prisma.booking.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      property: true,
+      user: true,
+      payment: true,
+    },
+  });
+};
+
+const updateBookingIntoDB = async (id: string, payload: IBookingUpdate) => {
+  return await prisma.booking.update({
+    where: {
+      id,
+    },
+    data: {
+      status: payload.status,
+    },
+    include: {
+      property: true,
+      user: true,
+      payment: true,
+    },
+  });
+};
+
+const deleteBookingFromDB = async (id: string) => {
+  return await prisma.booking.delete({
+    where: {
+      id,
+    },
+  });
+};
+
 export const propertyService = {
   createPropertyIntoDB,
   getAllPorpertiesFromDB,
   updatePropertiesIntoDB,
   deletePropertyFromDB,
+  getAllBookingsFromDB,
+  getSingleBookingFromDB,
+  updateBookingIntoDB,
+  deleteBookingFromDB,
 };
