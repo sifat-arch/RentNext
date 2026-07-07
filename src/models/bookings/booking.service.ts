@@ -1,3 +1,4 @@
+import { BookingStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { IBooking, IBookingQuery, IBookingUpdate } from "./booking.interface";
 
@@ -97,6 +98,57 @@ const getSingleBookingFromDB = async (id: string) => {
   });
 };
 
+const getLandlordBookingsFromDB = async (landlordId: string) => {
+  return await prisma.booking.findMany({
+    where: {
+      property: {
+        landlordId,
+      },
+    },
+    include: {
+      user: true,
+      property: true,
+      payment: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+const updateBookingStatusIntoDB = async (
+  bookingId: string,
+  landlordId: string,
+  status: BookingStatus,
+) => {
+  const booking = await prisma.booking.findUniqueOrThrow({
+    where: {
+      id: bookingId,
+    },
+    include: {
+      property: true,
+    },
+  });
+
+  if (booking.property.landlordId !== landlordId) {
+    throw new Error("Unauthorized");
+  }
+
+  return await prisma.booking.update({
+    where: {
+      id: bookingId,
+    },
+    data: {
+      status,
+    },
+    include: {
+      user: true,
+      property: true,
+      payment: true,
+    },
+  });
+};
+
 const updateBookingIntoDB = async (id: string, payload: IBookingUpdate) => {
   return await prisma.booking.update({
     where: {
@@ -126,4 +178,6 @@ export const bookingService = {
   getSingleBookingFromDB,
   updateBookingIntoDB,
   deleteBookingFromDB,
+  updateBookingStatusIntoDB,
+  getLandlordBookingsFromDB,
 };

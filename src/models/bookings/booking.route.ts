@@ -8,6 +8,17 @@ const router = Router();
 router.post("/", auth(Role.TENANT), bookingController.createBooking);
 
 router.get("/", auth(Role.ADMIN), bookingController.getAllBookings);
+router.get(
+  "/landlord",
+  auth(Role.LANDLORD),
+  bookingController.getLandlordBookings,
+);
+
+router.patch(
+  "/:id/status",
+  auth(Role.LANDLORD),
+  bookingController.updateBookingStatus,
+);
 
 router.get(
   "/:id",

@@ -17,3 +17,7 @@ export interface IBookingQuery {
   page?: string;
   limit?: string;
 }
+
+export interface IBookingStatusUpdate {
+  status: BookingStatus;
+}

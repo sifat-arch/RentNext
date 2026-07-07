@@ -50,6 +50,41 @@ const getSingleBooking = catchAsync(
   },
 );
 
+const getLandlordBookings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const landlordId = req.user!.id;
+
+    const result = await bookingService.getLandlordBookingsFromDB(landlordId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Landlord bookings retrieved successfully",
+      data: result,
+    });
+  },
+);
+
+const updateBookingStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const bookingId = req.params.id;
+    const landlordId = req.user!.id;
+
+    const result = await bookingService.updateBookingStatusIntoDB(
+      bookingId as string,
+      landlordId,
+      req.body.status,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Booking status updated successfully",
+      data: result,
+    });
+  },
+);
+
 const updateBooking = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
@@ -86,4 +121,6 @@ export const bookingController = {
   getSingleBooking,
   updateBooking,
   deleteBooking,
+  updateBookingStatus,
+  getLandlordBookings,
 };

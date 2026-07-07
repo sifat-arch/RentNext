@@ -6,7 +6,7 @@ import { auth } from "../../midlewere/auth";
 const router = Router();
 
 router.post(
-  "/properties",
+  "/",
   auth(Role.ADMIN, Role.LANDLORD),
   propertyController.createProperty,
 );

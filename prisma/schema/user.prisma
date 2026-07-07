@@ -9,5 +9,6 @@ model User {
      properties Property[]
      bookings   Booking[]
      reviews    Review[]
+     payments   Payment[]
      
 }
