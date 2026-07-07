@@ -12,12 +12,12 @@ router.post(
 );
 router.get("/", propertyController.getAllProperties);
 router.put(
-  "/properties/:id",
+  "/:id",
   auth(Role.ADMIN, Role.LANDLORD),
   propertyController.updateProperties,
 );
 router.delete(
-  "/properties/:id",
+  "/:id",
   auth(Role.ADMIN, Role.LANDLORD),
   propertyController.deleteProperty,
 );
