@@ -11,6 +11,8 @@ import { bookingRoute } from "./models/bookings/booking.route";
 import { notFound } from "./midlewere/notFound";
 import { globalErrorHandler } from "./midlewere/globalErrorHandler";
 
+import { reviewRouter } from "./models/reviews/reviews.route";
+
 const app: Application = express();
 app.use(
   cors({
@@ -27,6 +29,7 @@ app.use("/api/auth", userRouter);
 app.use("/api/property", propertyRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookings", bookingRoute);
+app.use("/api/reviews", reviewRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("hello world");
 });

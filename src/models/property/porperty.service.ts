@@ -99,17 +99,9 @@ const getAllPorpertiesFromDB = async (query: IPropertyQuery) => {
       [sortBy]: sortOrder,
     },
 
-    omit: {
-      id: true,
-      landlordId: true,
-    },
     include: {
       reviews: true,
-      category: {
-        omit: {
-          id: true,
-        },
-      },
+      category: true,
     },
   });
 
