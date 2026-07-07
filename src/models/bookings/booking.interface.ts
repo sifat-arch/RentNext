@@ -7,3 +7,13 @@ export interface IBooking {
 export interface IBookingUpdate {
   status?: BookingStatus;
 }
+
+export interface IBookingQuery {
+  search?: string;
+
+  sortBy?: "createdAt" | "status";
+  sortOrder?: "asc" | "desc";
+
+  page?: string;
+  limit?: string;
+}

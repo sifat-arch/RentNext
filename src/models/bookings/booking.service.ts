@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { IBooking, IBookingUpdate } from "./booking.interface";
+import { IBooking, IBookingQuery, IBookingUpdate } from "./booking.interface";
 
 const createBookingIntoDB = async (userId: string, payload: IBooking) => {
   const existingBooking = await prisma.booking.findFirst({
@@ -33,8 +33,49 @@ const createBookingIntoDB = async (userId: string, payload: IBooking) => {
   return result;
 };
 
-const getAllBookingsFromDB = async () => {
+const getAllBookingsFromDB = async (query: IBookingQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+
+  const skip = (page - 1) * limit;
+
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
   return await prisma.booking.findMany({
+    where: {
+      AND: [
+        query.search
+          ? {
+              OR: [
+                {
+                  user: {
+                    name: {
+                      contains: query.search,
+                      mode: "insensitive",
+                    },
+                  },
+                },
+                {
+                  property: {
+                    title: {
+                      contains: query.search,
+                      mode: "insensitive",
+                    },
+                  },
+                },
+              ],
+            }
+          : {},
+      ],
+    },
+
+    take: limit,
+    skip: skip,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+
     include: {
       property: true,
       user: true,
