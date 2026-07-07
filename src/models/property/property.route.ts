@@ -10,7 +10,7 @@ router.post(
   auth(Role.ADMIN, Role.LANDLORD),
   propertyController.createProperty,
 );
-router.get("/properties", propertyController.getAllProperties);
+router.get("/", propertyController.getAllProperties);
 router.put(
   "/properties/:id",
   auth(Role.ADMIN, Role.LANDLORD),

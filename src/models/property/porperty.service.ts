@@ -1,7 +1,11 @@
 import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { IBookingUpdate } from "../bookings/booking.interface";
-import { IProperty, IPropertyUpdate } from "./proprty.interface";
+import {
+  IProperty,
+  IPropertyQuery,
+  IPropertyUpdate,
+} from "./proprty.interface";
 
 const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
   const user = await prisma.user.findFirstOrThrow({
@@ -31,8 +35,70 @@ const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
   return properties;
 };
 
-const getAllPorpertiesFromDB = async () => {
+const getAllPorpertiesFromDB = async (query: IPropertyQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+
+  const skip = (page - 1) * limit;
+
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+
   const properties = await prisma.property.findMany({
+    // sarchting and filtering
+    where: {
+      AND: [
+        query.search
+          ? {
+              OR: [
+                {
+                  title: {
+                    contains: query.search,
+                    mode: "insensitive",
+                  },
+                },
+
+                {
+                  description: {
+                    contains: query.search,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  location: {
+                    contains: query.search,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            }
+          : {},
+
+        query.minPrice
+          ? {
+              price: {
+                gte: Number(query.minPrice),
+              },
+            }
+          : {},
+
+        query.maxPrice
+          ? {
+              price: {
+                lte: Number(query.maxPrice),
+              },
+            }
+          : {},
+      ],
+    },
+
+    take: limit,
+    skip: skip,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+
     omit: {
       id: true,
       landlordId: true,
