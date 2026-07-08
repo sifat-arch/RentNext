@@ -31,7 +31,7 @@ app.use("/api/property", propertyRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookings", bookingRoute);
 app.use("/api/reviews", reviewRouter);
-app.use("api/payments", paymentRouter);
+app.use("/api/payments", paymentRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("hello world");
 });

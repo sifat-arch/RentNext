@@ -7,9 +7,11 @@ import httpStatus from "http-status";
 const createCheckoutSession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
+    const bookingId = req.params.id;
 
     const result = await paymentService.createCheckoutSessionIntoDB(
       userId as string,
+      bookingId as string,
     );
 
     sendResponse(res, {
