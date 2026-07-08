@@ -1,4 +1,8 @@
-import { BookingStatus } from "../../../generated/prisma/enums";
+import {
+  BookingStatus,
+  PaymentProvider,
+  PaymentStatus,
+} from "../../../generated/prisma/enums";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
@@ -47,7 +51,7 @@ const createCheckoutSessionIntoDB = async (
       ],
 
       metadata: {
-        booking: booking.id,
+        bookingId: booking.id,
         userId: booking.userId,
       },
 
@@ -61,6 +65,73 @@ const createCheckoutSessionIntoDB = async (
   return trensitionResult;
 };
 
+const handleWebhook = async (payload: Buffer, signature: string) => {
+  const endpointSecret = config.stripe_webhook_secret;
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    endpointSecret,
+  );
+
+  // Handle the event
+  switch (event.type) {
+    case "checkout.session.completed":
+      // const paymentIntent = event.data.object;
+      const session = event.data.object;
+      const bookingId = session.metadata?.bookingId as string;
+      const userId = session.metadata?.userId as string;
+
+      console.log(session);
+      console.log(session.metadata);
+
+      if (session.payment_status !== "paid") {
+        throw new Error("Payment failed.");
+      }
+      if (!bookingId || !userId) {
+        throw new Error("Invalid metadata");
+      }
+
+      await prisma.$transaction(async (tx) => {
+        const existingPayment = await tx.payment.findUnique({
+          where: {
+            bookingId,
+          },
+        });
+
+        if (existingPayment) {
+          return;
+        }
+        await tx.payment.create({
+          data: {
+            bookingId,
+            userId,
+            amount: (session.amount_total ?? 0) / 100,
+            provider: PaymentProvider.STRIPE,
+            status: PaymentStatus.SUCCESS,
+            transactionId: session.payment_intent as string,
+          },
+        });
+
+        await tx.booking.update({
+          where: {
+            id: bookingId,
+          },
+          data: {
+            status: BookingStatus.PAID,
+          },
+        });
+      });
+
+      break;
+
+    default:
+      // Unexpected event type
+      console.log(`No Events Matched ${event.type}.`);
+      break;
+  }
+};
+
 export const paymentService = {
   createCheckoutSessionIntoDB,
+  handleWebhook,
 };

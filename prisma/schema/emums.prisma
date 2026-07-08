@@ -14,12 +14,12 @@ enum BookingStatus {
   APPROVED
   REJECTED
   ACTIVE
-  COMPLETED
+  PAID
 }
 
 enum PaymentStatus {
   PENDING
-  COMPLETED
+  SUCCESS
   FAILED
 }
 
