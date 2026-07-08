@@ -12,6 +12,7 @@ import { notFound } from "./midlewere/notFound";
 import { globalErrorHandler } from "./midlewere/globalErrorHandler";
 
 import { reviewRouter } from "./models/reviews/reviews.route";
+import { paymentRouter } from "./models/payments/payments.route";
 
 const app: Application = express();
 app.use(
@@ -30,6 +31,7 @@ app.use("/api/property", propertyRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/bookings", bookingRoute);
 app.use("/api/reviews", reviewRouter);
+app.use("api/payments", paymentRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("hello world");
 });
