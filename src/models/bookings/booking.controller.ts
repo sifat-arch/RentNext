@@ -89,6 +89,7 @@ const updateBooking = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const payload = req.body;
+
     const result = await bookingService.updateBookingIntoDB(
       id as string,
       payload,
