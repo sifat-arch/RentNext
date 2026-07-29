@@ -24,6 +24,7 @@ const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
       location: payload.location,
       price: Number(payload.price),
       description: payload.description,
+      image: payload.image,
       landlordId: landlordId,
       categoryId: payload.categoryId,
     },
@@ -141,6 +142,7 @@ const updatePropertiesIntoDB = async (
       location: payload.location,
       price: Number(payload.price),
       description: payload.description,
+      image: payload.image,
     },
     omit: {
       id: true,

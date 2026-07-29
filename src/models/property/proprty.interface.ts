@@ -5,6 +5,7 @@ export interface IProperty {
   location: string;
   price: number;
   description: string;
+  image: string;
   landlordId: string;
   categoryId: string;
 }
@@ -13,6 +14,7 @@ export interface IPropertyUpdate {
   location?: string;
   price?: number;
   description?: string;
+  image?: string;
 }
 
 export interface IPropertyQuery extends PropertyWhereInput {
