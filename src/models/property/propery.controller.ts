@@ -9,6 +9,8 @@ const createProperty = catchAsync(
     const payload = req.body;
     const landLordId = req.user?.id;
 
+    console.log("the payload", payload);
+
     const result = await propertyService.createPropertyIntoDB(
       landLordId as string,
       payload,
@@ -76,9 +78,38 @@ const deleteProperty = async (req: Request, res: Response) => {
   });
 };
 
+const getLandlordProperty = async (req: Request, res: Response) => {
+  const landLordId = req.user?.id;
+  console.log("controler landlerod id", landLordId);
+  const result = await propertyService.getLandlordPropertiesFromDB(
+    landLordId as string,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatus.OK,
+    message: "Property deleted successfully",
+    data: result,
+  });
+};
+
+const getSingleProperty = catchAsync(async (req, res) => {
+  const result = await propertyService.getSinglePropertyFromDB(
+    req.params.propertyId as string,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpstatus.OK,
+    message: "Property retrieved successfully",
+    data: result,
+  });
+});
 export const propertyController = {
   createProperty,
   getAllProperties,
   updateProperties,
   deleteProperty,
+  getLandlordProperty,
+  getSingleProperty,
 };

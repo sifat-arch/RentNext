@@ -19,8 +19,7 @@ const getAllUsers = catchAsync(
 
 const updateUserStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-    const { status } = req.body;
+    const { id, status } = req.body;
 
     const result = await adminServices.changeUserStatus(id as string, status);
 

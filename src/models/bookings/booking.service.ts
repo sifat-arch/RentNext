@@ -115,10 +115,24 @@ const getLandlordBookingsFromDB = async (landlordId: string) => {
     },
   });
 };
+const getTenantBookingsFromDB = async (tenantId: string) => {
+  return await prisma.booking.findMany({
+    where: {
+      userId: tenantId,
+    },
+    include: {
+      user: true,
+      property: true,
+      payment: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
 
 const updateBookingStatusIntoDB = async (
   bookingId: string,
-  landlordId: string,
   status: BookingStatus,
 ) => {
   const booking = await prisma.booking.findUniqueOrThrow({
@@ -130,9 +144,9 @@ const updateBookingStatusIntoDB = async (
     },
   });
 
-  if (booking.property.landlordId !== landlordId) {
-    throw new Error("Unauthorized");
-  }
+  // if (booking.property.landlordId !== landlordId) {
+  //   throw new Error("Unauthorized");
+  // }
 
   return await prisma.booking.update({
     where: {
@@ -180,4 +194,5 @@ export const bookingService = {
   deleteBookingFromDB,
   updateBookingStatusIntoDB,
   getLandlordBookingsFromDB,
+  getTenantBookingsFromDB,
 };

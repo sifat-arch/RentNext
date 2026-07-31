@@ -64,15 +64,27 @@ const getLandlordBookings = catchAsync(
     });
   },
 );
+const getTenantBookings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const tenantId = req.user!.id;
+
+    const result = await bookingService.getTenantBookingsFromDB(tenantId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Tenant bookings retrieved successfully",
+      data: result,
+    });
+  },
+);
 
 const updateBookingStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const bookingId = req.params.id;
-    const landlordId = req.user!.id;
 
     const result = await bookingService.updateBookingStatusIntoDB(
       bookingId as string,
-      landlordId,
       req.body.status,
     );
 
@@ -124,4 +136,5 @@ export const bookingController = {
   deleteBooking,
   updateBookingStatus,
   getLandlordBookings,
+  getTenantBookings,
 };

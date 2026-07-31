@@ -13,10 +13,11 @@ router.get(
   auth(Role.LANDLORD),
   bookingController.getLandlordBookings,
 );
+router.get("/tenant", auth(Role.TENANT), bookingController.getTenantBookings);
 
 router.patch(
   "/:id/status",
-  auth(Role.LANDLORD),
+  auth(Role.LANDLORD, Role.ADMIN),
   bookingController.updateBookingStatus,
 );
 

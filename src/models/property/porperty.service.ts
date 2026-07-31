@@ -17,7 +17,7 @@ const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
   if (user.status === "BANNED") {
     throw new Error("You Dont have parmition to create proerty");
   }
-
+  console.log("Payload:", payload);
   const properties = await prisma.property.create({
     data: {
       title: payload.title,
@@ -32,6 +32,8 @@ const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
       category: true,
     },
   });
+
+  console.log("Create Data:", JSON.stringify(properties, null, 2));
 
   return properties;
 };
@@ -107,6 +109,28 @@ const getAllPorpertiesFromDB = async (query: IPropertyQuery) => {
   });
 
   return properties;
+};
+
+const getLandlordPropertiesFromDB = async (landlordId: string) => {
+  console.log("landlord id", landlordId);
+  const result = await prisma.property.findMany({
+    where: {
+      landlordId: landlordId,
+    },
+  });
+
+  return result;
+};
+
+const getSinglePropertyFromDB = async (propertyId: string) => {
+  return prisma.property.findUniqueOrThrow({
+    where: {
+      id: propertyId,
+    },
+    include: {
+      category: true,
+    },
+  });
 };
 
 const updatePropertiesIntoDB = async (
@@ -205,4 +229,6 @@ export const propertyService = {
   getAllPorpertiesFromDB,
   updatePropertiesIntoDB,
   deletePropertyFromDB,
+  getLandlordPropertiesFromDB,
+  getSinglePropertyFromDB,
 };

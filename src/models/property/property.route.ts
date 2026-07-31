@@ -11,6 +11,11 @@ router.post(
   propertyController.createProperty,
 );
 router.get("/", propertyController.getAllProperties);
+router.get(
+  "/landlord-property",
+  auth(Role.LANDLORD),
+  propertyController.getLandlordProperty,
+);
 router.put(
   "/:id",
   auth(Role.ADMIN, Role.LANDLORD),
@@ -21,5 +26,6 @@ router.delete(
   auth(Role.ADMIN, Role.LANDLORD),
   propertyController.deleteProperty,
 );
+router.get("/:propertyId", auth(Role.LANDLORD), propertyController.getSingleProperty);
 
 export const propertyRouter = router;
