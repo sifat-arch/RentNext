@@ -51,19 +51,41 @@ const loginUser = catchAsync(
   },
 );
 
+const googleLogin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { idToken } = req.body;
+
+    const { accessToken, refreshToken, user } =
+      await userService.googleLoginDB(idToken);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 2,
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Google login successful",
+      data: {
+        accessToken,
+        refreshToken,
+        user,
+      },
+    });
+  },
+);
+
 const getMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { accessToken } = req.cookies;
-
-    // const verifyToken = jwtUtils.verifyToken(
-    //   accessToken,
-    //   config.jwt_access_secret,
-    // );
-
-    // if (typeof verifyToken === "string") {
-    //   throw new Error("Invalid token payload");
-    // }
-
     const profile = await userService.getMeDB(req.user?.id as string);
 
     sendResponse(res, {
@@ -102,6 +124,7 @@ const refreshToken = catchAsync(
 export const userController = {
   registerUser,
   loginUser,
+  googleLogin,
   getMe,
   refreshToken,
 };

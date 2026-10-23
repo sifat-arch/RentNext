@@ -29,6 +29,17 @@ const createCheckoutSessionIntoDB = async (
       throw new Error("Booking is not approved.");
     }
 
+    const rawClientUrl =
+      config.client_url ||
+      process.env.CLIENT_URL ||
+      process.env.FRONTEND_APP_URL ||
+      "http://localhost:3000";
+    const cleanClientUrl = rawClientUrl.replace(/\/+$/, "");
+    const baseClientUrl =
+      cleanClientUrl.startsWith("http://") || cleanClientUrl.startsWith("https://")
+        ? cleanClientUrl
+        : `http://${cleanClientUrl}`;
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
@@ -55,8 +66,8 @@ const createCheckoutSessionIntoDB = async (
         userId: booking.userId,
       },
 
-      success_url: `${config.client_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${config.client_url}/payment/cancel`,
+      success_url: `${baseClientUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseClientUrl}/payment/cancel`,
     });
 
     return session.url;

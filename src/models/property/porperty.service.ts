@@ -28,9 +28,7 @@ const createPropertyIntoDB = async (landlordId: string, payload: IProperty) => {
       landlordId: landlordId,
       categoryId: payload.categoryId,
     },
-    include: {
-      category: true,
-    },
+    include: { category: true, landlord: { select: { id: true, name: true, email: true } }, reviews: true },
   });
 
   console.log("Create Data:", JSON.stringify(properties, null, 2));
@@ -127,9 +125,7 @@ const getSinglePropertyFromDB = async (propertyId: string) => {
     where: {
       id: propertyId,
     },
-    include: {
-      category: true,
-    },
+    include: { category: true, landlord: { select: { id: true, name: true, email: true } }, reviews: true },
   });
 };
 

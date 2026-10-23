@@ -13,11 +13,25 @@ import { globalErrorHandler } from "./midlewere/globalErrorHandler";
 import { reviewRouter } from "./models/reviews/reviews.route";
 import { paymentRouter } from "./models/payments/payments.route";
 import { adminRoutr } from "./models/admin/admin.route";
+import { aiRouter } from "./models/ai/ai.route";
 
 const app: Application = express();
+const allowedOrigins = [
+  config.client_url,
+  config.app_url,
+  "http://localhost:3000",
+  "http://localhost:5000",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: config.app_url,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   }),
 );
@@ -36,6 +50,7 @@ app.use("/api/bookings", bookingRoute);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/admin", adminRoutr);
+app.use("/api/ai", aiRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("hello world");
 });

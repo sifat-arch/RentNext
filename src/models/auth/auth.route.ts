@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/register", userController.registerUser);
 router.post("/login", userController.loginUser);
+router.post("/google", userController.googleLogin);
 router.get(
   "/me",
   auth(Role.ADMIN, Role.LANDLORD, Role.TENANT),

@@ -81,6 +81,83 @@ const loginUserDB = async (payload: LoginUserPayload) => {
   };
 };
 
+const googleLoginDB = async (idToken: string) => {
+  if (!idToken) {
+    throw new Error("Google token is required");
+  }
+
+  const res = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`,
+  );
+  if (!res.ok) {
+    throw new Error("Invalid or expired Google token");
+  }
+
+  const payload = await res.json();
+  const { email, name, email_verified } = payload;
+
+  if (!email || !email_verified) {
+    throw new Error("Google email is not verified");
+  }
+
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (user) {
+    if (user.status === "BANNED") {
+      throw new Error("Your account has been banned. Please contact support.");
+    }
+  } else {
+    const randomPassword = await bcrypt.hash(
+      Math.random().toString(36).slice(-10) + Date.now().toString(),
+      Number(config.byrypt_salt_rounds) || 10,
+    );
+
+    user = await prisma.user.create({
+      data: {
+        name: name || email.split("@")[0],
+        email: email,
+        password: randomPassword,
+        role: "TENANT",
+      },
+    });
+  }
+
+  const accessToken = jwtUtils.createToken(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions["expiresIn"],
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions["expiresIn"],
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
+};
+
 const getMeDB = async (userId: string) => {
   const user = prisma.user.findUniqueOrThrow({
     where: {
@@ -137,6 +214,7 @@ const refreshTokenDB = async (refreshToken: string) => {
 export const userService = {
   registerUserDB,
   loginUserDB,
+  googleLoginDB,
   getMeDB,
   refreshTokenDB,
 };
