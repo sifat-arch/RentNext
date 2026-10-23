@@ -6,9 +6,10 @@ import { jwtUtils } from "../../utils/jwt";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
 
 const registerUserDB = async (payload: RegisterUserPayload) => {
+  const normalizedEmail = payload.email.toLowerCase().trim();
   const isUserExist = await prisma.user.findUnique({
     where: {
-      email: payload.email,
+      email: normalizedEmail,
     },
   });
 
@@ -23,7 +24,7 @@ const registerUserDB = async (payload: RegisterUserPayload) => {
   const user = await prisma.user.create({
     data: {
       name: payload.name,
-      email: payload.email,
+      email: normalizedEmail,
       password: hashedPassword,
       role: payload.role,
     },
@@ -36,13 +37,18 @@ const registerUserDB = async (payload: RegisterUserPayload) => {
 };
 
 const loginUserDB = async (payload: LoginUserPayload) => {
-  const { email, password } = payload;
+  const email = payload.email.toLowerCase().trim();
+  const { password } = payload;
 
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: {
       email: email,
     },
   });
+
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
 
   if (user.status === "BANNED") {
     throw new Error("Your account has been banned. Please contact support.");
@@ -159,7 +165,7 @@ const googleLoginDB = async (idToken: string) => {
 };
 
 const getMeDB = async (userId: string) => {
-  const user = prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: {
       id: userId,
     },
@@ -167,6 +173,10 @@ const getMeDB = async (userId: string) => {
       password: true,
     },
   });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
 
   return user;
 };
@@ -183,11 +193,15 @@ const refreshTokenDB = async (refreshToken: string) => {
 
   const { id } = verifiedRefreshtoken.data as JwtPayload;
 
-  const user = await prisma.user.findFirstOrThrow({
+  const user = await prisma.user.findFirst({
     where: {
       id,
     },
   });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
 
   if (user.status === "BANNED") {
     throw new Error("User is Blocked");
